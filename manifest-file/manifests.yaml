@@ -1,0 +1,102 @@
+---
+# Source: helm-chart/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: uat-env-helm-chart
+  labels:
+    helm.sh/chart: helm-chart-0.1.0
+    app.kubernetes.io/name: helm-chart
+    app.kubernetes.io/instance: uat-env
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: helm-chart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: uat-env-helm-chart
+  labels:
+    helm.sh/chart: helm-chart-0.1.0
+    app.kubernetes.io/name: helm-chart
+    app.kubernetes.io/instance: uat-env
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: helm-chart
+    app.kubernetes.io/instance: uat-env
+---
+# Source: helm-chart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uat-env-helm-chart
+  labels:
+    helm.sh/chart: helm-chart-0.1.0
+    app.kubernetes.io/name: helm-chart
+    app.kubernetes.io/instance: uat-env
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: helm-chart
+      app.kubernetes.io/instance: uat-env
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: helm-chart
+        app.kubernetes.io/instance: uat-env
+    spec:
+      serviceAccountName: uat-env-helm-chart
+      securityContext:
+        {}
+      containers:
+        - name: helm-chart
+          securityContext:
+            {}
+          image: "wohligakash/pingpong:main-9246f9bfa468661549ad3321a77d67e00c264898"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+---
+# Source: helm-chart/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "uat-env-helm-chart-test-connection"
+  labels:
+    helm.sh/chart: helm-chart-0.1.0
+    app.kubernetes.io/name: helm-chart
+    app.kubernetes.io/instance: uat-env
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['uat-env-helm-chart:80']
+  restartPolicy: Never
