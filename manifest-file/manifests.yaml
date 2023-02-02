@@ -45,7 +45,7 @@ metadata:
     app.kubernetes.io/version: "1.16.0"
     app.kubernetes.io/managed-by: Helm
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: helm-chart
@@ -63,7 +63,7 @@ spec:
         - name: helm-chart
           securityContext:
             {}
-          image: "wohligakash/pingpong:main-9246f9bfa468661549ad3321a77d67e00c264898"
+          image: "wohligakash/pingpong:main-ad4a78c74ae43ec9c22c19b162a6de65bde5572a"
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
